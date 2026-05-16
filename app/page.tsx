@@ -48,8 +48,10 @@ export default function AnniversaryApp() {
   const [passcode, setPasscode] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [justUnlocked, setJustUnlocked] = useState<boolean>(false);
   const [floatingItems, setFloatingItems] = useState<FloatingItem[]>([]);
   const ytPlayerRef = useRef<any>(null);
+  const HEART_ANIM_MS = 4800;
 
   // Fix Hydration Error: Only generate random attributes on the client side after mount
   useEffect(() => {
@@ -187,11 +189,16 @@ export default function AnniversaryApp() {
   };
 
   const triggerUnlockSequence = () => {
-    setStep("unlocking");
+    // show a brief pop on the lock card before starting the unlocking portal
+    setJustUnlocked(true);
     setIsMuted(false);
+
+    // Immediately start the unlocking portal animation
+    setStep("unlocking");
 
     const colors = ["#ff0a54", "#ff477e", "#ff7096", "#ff85a1", "#fbb1bd"];
 
+    // light confetti at the start of unlocking
     confetti({
       particleCount: 12,
       angle: 60,
@@ -211,9 +218,13 @@ export default function AnniversaryApp() {
       gravity: 0.8,
     });
 
+    // move to the letter stage after the heart animation finishes
     setTimeout(() => {
       setStep("letter");
-    }, 1400);
+    }, HEART_ANIM_MS + 300);
+
+    // clear the small lock-card pop flag after the pop completes
+    setTimeout(() => setJustUnlocked(false), 900);
   };
 
   // Helper to render new floating characters
@@ -222,28 +233,30 @@ export default function AnniversaryApp() {
       const xPos = 10 + (index * 15) % 80;
       const baseDelay = index * 2;
       return (
-        <motion.div
-          key={index}
-          className="absolute drop-shadow-[0_0_20px_rgba(244,63,94,0.3)] select-none pointer-events-none"
-          initial={{
-            x: `${xPos}%`,
-            y: "115%",
-            rotate: Math.random() * 20 - 10,
-            opacity: 0,
-          }}
-          animate={{
-            y: "-15%",
-            rotate: Math.random() * 40 - 20,
-            opacity: [0, 0.8, 0.8, 0],
-          }}
-          transition={{
-            duration: Math.random() * 15 + 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: baseDelay + Math.random() * 3,
-          }}
-          style={{ left: `${xPos}%` }}
-        >
+          <motion.div
+            key={index}
+            className="absolute drop-shadow-[0_0_20px_rgba(244,63,94,0.3)] select-none pointer-events-none"
+            initial={{
+              x: `${xPos}%`,
+              y: "115%",
+              rotate: Math.random() * 20 - 10,
+              scale: 0.84,
+              opacity: 0,
+            }}
+            animate={{
+              y: "-15%",
+              rotate: Math.random() * 40 - 20,
+              scale: [1.05, 0.95, 1],
+              opacity: [0, 0.8, 0.8, 0],
+            }}
+            transition={{
+              duration: Math.random() * 18 + 14,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: baseDelay + Math.random() * 3,
+            }}
+            style={{ left: `${xPos}%` }}
+          >
           {asset.type === 'image' ? (
             <img 
               src={asset.src} 
@@ -273,15 +286,27 @@ export default function AnniversaryApp() {
           <motion.div
             key="lock"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            transition={{ duration: 0.8 }}
+            exit={{ opacity: 0, scale: 1.08 }}
+            transition={{ duration: 1.6, ease: "easeOut" }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4"
           >
-            <div className="absolute w-[350px] h-[350px] bg-rose-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[4000ms]" />
+            <div className="absolute w-[350px] h-[350px] bg-rose-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[5200ms]" />
 
             <motion.div
-              animate={error ? { x: [-12, 12, -12, 12, 0] } : {}}
-              transition={{ duration: 0.4 }}
+              animate={
+                error
+                  ? { x: [-12, 12, -12, 12, 0] }
+                  : justUnlocked
+                  ? { scale: [1, 1.18, 0.94, 1], rotate: [0, -8, 8, 0] }
+                  : {}
+              }
+              transition={
+                error
+                  ? { duration: 0.8, ease: "easeInOut" }
+                  : justUnlocked
+                  ? { duration: 1.12, ease: "easeOut" }
+                  : { duration: 0.9 }
+              }
               className="w-full max-w-md rounded-[2.5rem] bg-stone-900/40 backdrop-blur-2xl border border-rose-500/20 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_30px_rgba(159,18,57,0.2)] flex flex-col items-center text-center relative overflow-hidden"
             >
               {/* Background Floating elements inside lock screen */}
@@ -290,9 +315,9 @@ export default function AnniversaryApp() {
                   <motion.div
                     key={item.id}
                     className="absolute selection:bg-transparent select-none text-xl"
-                    initial={{ x: item.x, y: "110%", rotate: item.rotate, opacity: 0 }}
-                    animate={{ y: "-10%", rotate: item.rotate + 180, opacity: [0, 0.5, 0] }}
-                    transition={{ duration: item.duration * 0.8, repeat: Infinity, ease: "linear", delay: item.delay }}
+                    initial={{ x: item.x, y: "110%", rotate: item.rotate, scale: 0.88, opacity: 0 }}
+                    animate={{ y: "-10%", rotate: item.rotate + 180, scale: [0.98, 1.04, 0.98], opacity: [0, 0.5, 0] }}
+                    transition={{ duration: item.duration * 1.1, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
                     style={{ left: item.x }}
                   >
                     {item.char}
@@ -305,7 +330,7 @@ export default function AnniversaryApp() {
               </div>
 
               <h1 className="text-3xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-100 to-rose-200 font-serif z-10">
-                Welcome, Shyraon
+                Welcome, Shyaron
               </h1>
               <p className="text-xs mt-2 text-rose-300/60 italic tracking-widest font-light z-10">YOUR SPECIAL SPACE</p>
 
@@ -367,8 +392,8 @@ export default function AnniversaryApp() {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              animate={{ scale: [0.8, 1.2, 45], opacity: [1, 1, 0] }}
-              transition={{ duration: 2.5, ease: "easeInOut" }}
+              animate={{ scale: [0.6, 1.18, 12, 45], opacity: [0, 1, 1, 0] }}
+              transition={{ duration: HEART_ANIM_MS / 1000, ease: "easeInOut" }}
               className="text-rose-500 filter drop-shadow-[0_0_50px_rgba(244,63,94,0.8)]"
             >
               <Heart size={100} className="fill-rose-600 text-rose-600" />
@@ -380,10 +405,10 @@ export default function AnniversaryApp() {
         {step === "letter" && (
           <motion.div
             key="letter"
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 50, scale: 0.96 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -30 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden"
           >
             {/* New floating characters and extra hearts */}
@@ -399,8 +424,8 @@ export default function AnniversaryApp() {
             </div>
 
             <motion.div
-              whileHover={{ scale: 1.05, rotate: 1, boxShadow: "0 0 50px rgba(244, 63, 94, 0.4)" }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.14, rotate: 3, boxShadow: "0 0 70px rgba(244, 63, 94, 0.5)" }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => setStep("final")}
               className="cursor-pointer group relative w-full max-w-md aspect-[4/3] rounded-3xl bg-gradient-to-br from-rose-50 to-stone-200 text-stone-800 p-8 flex flex-col justify-between shadow-[0_30px_60px_rgba(0,0,0,0.6)] border-2 border-white transition-all overflow-hidden z-10"
             >
@@ -432,12 +457,12 @@ export default function AnniversaryApp() {
         {/* STAGE 4: MAIN SCROLLABLE CINEMATIC LOVE LETTER PAGE */}
         {step === "final" && (
           <motion.div
-            key="final"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5 }}
-            className="relative z-10 min-h-screen w-full flex flex-col items-center py-20 px-4 md:px-8 bg-gradient-to-b from-transparent via-rose-950/20 to-black/40"
-          >
+              key="final"
+              initial={{ opacity: 0, y: 38, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 2.6, ease: "easeOut" }}
+              className="relative z-10 min-h-screen w-full flex flex-col items-center py-20 px-4 md:px-8 bg-gradient-to-b from-transparent via-rose-950/20 to-black/40"
+            >
             {/* Extended floating elements including new characters for the final page */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
               {floatingItems.map((item) => (
@@ -445,8 +470,8 @@ export default function AnniversaryApp() {
                   key={item.id}
                   className="absolute drop-shadow-[0_0_15px_rgba(244,63,94,0.4)] selection:bg-transparent select-none text-3xl"
                   initial={{ x: item.x, y: "110%", rotate: item.rotate, scale: item.scale, opacity: 0 }}
-                  animate={{ y: "-10%", rotate: item.rotate + 360, opacity: [0, 0.7, 0.7, 0] }}
-                  transition={{ duration: item.duration * 1.3, repeat: Infinity, ease: "linear", delay: item.delay }}
+                  animate={{ y: "-10%", rotate: item.rotate + 360, scale: [0.96, 1.04, 0.98], opacity: [0, 0.7, 0.7, 0] }}
+                  transition={{ duration: item.duration * 1.8, repeat: Infinity, ease: "linear", delay: item.delay }}
                   style={{ left: item.x }}
                 >
                   {item.char}
@@ -475,7 +500,7 @@ export default function AnniversaryApp() {
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 100, delay: 0.3 }}
+                  transition={{ type: "spring", stiffness: 120, damping: 14, delay: 0.5 }}
                   className="inline-block p-4 bg-rose-500/10 rounded-full text-rose-400 mb-2 border border-rose-500/30 shadow-[0_0_30px_rgba(244,63,94,0.3)]"
                 >
                   <Heart className="fill-rose-500 text-rose-500 animate-pulse" size={32} />
@@ -521,7 +546,7 @@ export default function AnniversaryApp() {
                       <span>The Day We Met</span>
                     </div>
                     <h4 className="text-xl font-bold text-stone-100 font-serif">Sparking the First Conversation</h4>
-                    <p className="text-base text-stone-300/80 mt-1 font-light">A simple Mobile Legends game turned into something much bigger a heartbeat duo that just clicked instantly. From that moment, it felt like my universe finally found its missing piece… you..</p>
+                    <p className="text-base text-stone-300/80 mt-1 font-light">It began so simple—just a random game of Mobile Legends. I didn’t think much of it at the time, but looking back, that was the exact moment everything changed. We became this instant heartbeat duo, completely in sync from the very first match. It honestly felt like my universe finally shifted into place, like I’d found the missing piece I didn’t even know I was looking for… you.</p>
                   </div>
 
                   {/* Timeline 2 */}
@@ -532,9 +557,7 @@ export default function AnniversaryApp() {
                       <span>Growing Closer</span>
                     </div>
                     <h4 className="text-xl font-bold text-stone-100 font-serif">Late Nights & Endless Talks</h4>
-                    <p className="text-base text-stone-300/80 mt-1 font-light">From random late-night chats to playing games for hours Roblox, Sky, MLBB and everything in between.
-We fought sometimes, we annoyed each other, but somehow we always found our way back.
-You became my safe place, my comfort, and my favorite person to escape to.</p>
+                    <p className="text-base text-stone-300/80 mt-1 font-light">Suddenly, my favorite part of the day became the hours we spent losing track of time. Late-night talks that bled into early mornings, jumping from Roblox to Sky, back to MLBB, and just talking about absolutely nothing. We’ve had our moments—we’ve argued, we’ve gotten under each other’s skin—but we always, always found our way back. You became my quiet space. My comfort. The person I run to when the rest of the world gets too loud.</p>
                   </div>
 
                   {/* Timeline 3 */}
