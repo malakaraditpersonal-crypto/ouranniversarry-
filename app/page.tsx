@@ -190,49 +190,30 @@ export default function AnniversaryApp() {
     setStep("unlocking");
     setIsMuted(false);
 
-    const durationMs = 3200;
-    const intervalMs = 220;
-    const maxBursts = Math.ceil(durationMs / intervalMs);
-    let burstCount = 0;
+    const colors = ["#ff0a54", "#ff477e", "#ff7096", "#ff85a1", "#fbb1bd"];
 
-    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+    confetti({
+      particleCount: 12,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0.18, y: 0.62 },
+      colors,
+      scalar: 1.1,
+      gravity: 0.8,
+    });
+    confetti({
+      particleCount: 12,
+      angle: 120,
+      spread: 55,
+      origin: { x: 0.82, y: 0.62 },
+      colors,
+      scalar: 1.1,
+      gravity: 0.8,
+    });
 
-    const intervalId = window.setInterval(() => {
-      burstCount += 1;
-
-      confetti({
-        particleCount: 8,
-        angle: 60,
-        spread: 65,
-        origin: { x: 0.15, y: 0.6 },
-        colors: ["#ff0a54", "#ff477e", "#ff7096", "#ff85a1", "#fbb1bd"],
-        scalar: 1.2,
-      });
-      confetti({
-        particleCount: 8,
-        angle: 120,
-        spread: 65,
-        origin: { x: 0.85, y: 0.6 },
-        colors: ["#ff0a54", "#ff477e", "#ff7096", "#ff85a1", "#fbb1bd"],
-        scalar: 1.2,
-      });
-
-      if (Math.random() < 0.35) {
-        confetti({
-          particleCount: 3,
-          origin: { x: randomInRange(0.25, 0.75), y: 0.05 },
-          colors: ["#ff0a54", "#ffccd5"],
-          drift: randomInRange(-0.4, 0.4),
-          gravity: 0.75,
-          scalar: 1.1,
-        });
-      }
-
-      if (burstCount >= maxBursts) {
-        window.clearInterval(intervalId);
-        setStep("letter");
-      }
-    }, intervalMs);
+    setTimeout(() => {
+      setStep("letter");
+    }, 1400);
   };
 
   // Helper to render new floating characters
