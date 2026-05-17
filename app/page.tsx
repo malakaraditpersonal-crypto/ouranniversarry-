@@ -101,18 +101,18 @@ export default function AnniversaryApp() {
   const [floatingItems, setFloatingItems] = useState<FloatingItem[]>([]);
   const [hiddenNotes, setHiddenNotes] = useState<HiddenNote[]>([]);
   const ytPlayerRef = useRef<any>(null);
-  const HEART_ANIM_MS = 7600;
+  const HEART_ANIM_MS = 6800;
 
   // Fix Hydration Error: Only generate random attributes on the client side after mount
   useEffect(() => {
     const items = ["🌸", "💖", "🌹", "❤️", "❀", "✨", "💕", "💗"];
-    const generated: FloatingItem[] = Array.from({ length: 40 }).map((_, i) => ({
+    const generated: FloatingItem[] = Array.from({ length: 24 }).map((_, i) => ({
       id: i,
       x: Math.random() * 100 + "%",
       rotate: Math.random() * 360,
       scale: Math.random() * 1.6 + 0.9,
-      duration: Math.random() * 18 + 16,
-      delay: Math.random() * 6,
+      duration: Math.random() * 10 + 10,
+      delay: Math.random() * 3,
       char: items[Math.floor(Math.random() * items.length)],
     }));
     setFloatingItems(generated);
@@ -266,9 +266,9 @@ export default function AnniversaryApp() {
 
     setTimeout(() => {
       setStep("letter");
-    }, HEART_ANIM_MS + 500);
+    }, HEART_ANIM_MS + 150);
 
-    setTimeout(() => setJustUnlocked(false), 900);
+    setTimeout(() => setJustUnlocked(false), 600);
   };
 
   // Subtle Hidden Interaction Handler
@@ -331,10 +331,10 @@ export default function AnniversaryApp() {
               opacity: [0, 0.8, 0.8, 0],
             }}
             transition={{
-              duration: Math.random() * 28 + 26,
+              duration: Math.random() * 8 + 10,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: baseDelay + Math.random() * 5,
+              delay: baseDelay + Math.random() * 2,
             }}
             style={{ left: `${xPos}%` }}
           >
@@ -368,7 +368,7 @@ export default function AnniversaryApp() {
             key="lock"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.08 }}
-            transition={{ duration: 1.9, ease: "easeOut" }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4"
           >
             <div className="absolute w-[350px] h-[350px] bg-rose-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[5200ms]" />
@@ -383,10 +383,10 @@ export default function AnniversaryApp() {
               }
               transition={
                 error
-                  ? { duration: 1.0, ease: "easeInOut" }
+                  ? { duration: 0.65, ease: "easeInOut" }
                   : justUnlocked
-                  ? { duration: 1.8, ease: "easeOut" }
-                  : { duration: 1.2, ease: "easeInOut" }
+                  ? { duration: 1.1, ease: "easeOut" }
+                  : { duration: 0.85, ease: "easeInOut" }
               }
               className="w-full max-w-md rounded-[2.5rem] bg-stone-900/40 backdrop-blur-2xl border border-rose-500/20 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_30px_rgba(159,18,57,0.2)] flex flex-col items-center text-center relative overflow-hidden"
             >
@@ -471,7 +471,7 @@ export default function AnniversaryApp() {
           >
             <motion.div
               animate={{ scale: [0.6, 1.18, 12, 45], opacity: [0, 1, 1, 0] }}
-              transition={{ duration: HEART_ANIM_MS / 1000, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+              transition={{ duration: HEART_ANIM_MS / 1000, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
               className="text-rose-500 filter drop-shadow-[0_0_50px_rgba(244,63,94,0.8)]"
             >
               <Heart size={100} className="fill-rose-600 text-rose-600" />
@@ -486,7 +486,7 @@ export default function AnniversaryApp() {
             initial={{ opacity: 0, y: 50, scale: 0.96 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -30 }}
-            transition={{ duration: 2.2, ease: "easeOut", delay: 0.16 }}
+            transition={{ duration: 1.0, ease: "easeOut", delay: 0.08 }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden"
           >
             <div className="absolute inset-0 pointer-events-none z-0">
@@ -536,7 +536,7 @@ export default function AnniversaryApp() {
               key="final"
               initial={{ opacity: 0, y: 38, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 4.2, ease: "easeOut", delay: 0.2 }}
+              transition={{ duration: 1.8, ease: "easeOut", delay: 0.1 }}
               className="relative z-10 min-h-screen w-full flex flex-col items-center py-20 px-4 md:px-8 bg-gradient-to-b from-transparent via-rose-950/20 to-black/40"
             >
             
@@ -570,7 +570,7 @@ export default function AnniversaryApp() {
                   className="absolute drop-shadow-[0_0_15px_rgba(244,63,94,0.4)] selection:bg-transparent select-none text-3xl pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
                   initial={{ x: item.x, y: "110%", rotate: item.rotate, scale: item.scale, opacity: 0 }}
                   animate={{ y: "-10%", rotate: item.rotate + 360, scale: [0.96, 1.04, 0.98], opacity: [0, 0.7, 0.7, 0] }}
-                  transition={{ duration: item.duration * 1.8, repeat: Infinity, ease: "linear", delay: item.delay }}
+                  transition={{ duration: item.duration * 1.2, repeat: Infinity, ease: "linear", delay: item.delay }}
                   style={{ left: item.x }}
                 >
                   {item.char}
@@ -703,7 +703,7 @@ export default function AnniversaryApp() {
                       className="absolute text-rose-400/50"
                       initial={{ y: 80, opacity: 0, scale: 0.5 }}
                       animate={{ y: -180, opacity: [0, 1, 0], scale: 1.5 }}
-                      transition={{ duration: 4, repeat: Infinity, delay: i * 0.7, ease: "easeOut" }}
+                      transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.35, ease: "easeOut" }}
                       style={{ left: `${30 + Math.random() * 40}%`, fontSize: `${Math.random() * 10 + 10}px` }}
                     >
                       {i % 2 === 0 ? "✨" : "♥"}
