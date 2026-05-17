@@ -15,6 +15,13 @@ interface FloatingItem {
   char: string;
 }
 
+interface HiddenNote {
+  id: number;
+  text: string;
+  x: number;
+  y: number;
+}
+
 // Data for new floating character elements
 const characterAssets = [
   {
@@ -43,6 +50,48 @@ const characterAssets = [
   { type: 'emoji', char: '💕' },
 ];
 
+const reasons = [
+  "You became my favorite part of the day.",
+  "Your voice makes everything feel calmer.",
+  "Even far away, you still feel like home."
+];
+
+// Interactive Reason Card Component
+const ReasonCard = ({ text }: { text: string }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <motion.div
+      onClick={() => setOpen(!open)}
+      className="cursor-pointer group relative h-32 rounded-2xl bg-stone-900/40 border border-rose-500/20 backdrop-blur-md flex items-center justify-center p-6 text-center shadow-[0_0_20px_rgba(159,18,57,0.1)] hover:shadow-[0_0_30px_rgba(244,63,94,0.2)] transition-all duration-500 overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <AnimatePresence mode="wait">
+        {!open ? (
+          <motion.div
+            key="icon"
+            exit={{ opacity: 0, scale: 0.5, filter: "blur(4px)" }}
+            transition={{ duration: 0.3 }}
+            className="text-rose-400 flex flex-col items-center gap-2 relative z-10"
+          >
+            <Heart size={28} className="animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.5)] fill-rose-500/20" />
+            <p className="text-[10px] text-rose-300/50 font-mono tracking-widest uppercase">Tap to reveal</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="text"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.4 }}
+            className="text-rose-100 font-serif italic text-[15px] leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10"
+          >
+            "{text}"
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 export default function AnniversaryApp() {
   const [step, setStep] = useState<"lock" | "unlocking" | "letter" | "final">("lock");
   const [passcode, setPasscode] = useState<string>("");
@@ -50,6 +99,7 @@ export default function AnniversaryApp() {
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [justUnlocked, setJustUnlocked] = useState<boolean>(false);
   const [floatingItems, setFloatingItems] = useState<FloatingItem[]>([]);
+  const [hiddenNotes, setHiddenNotes] = useState<HiddenNote[]>([]);
   const ytPlayerRef = useRef<any>(null);
   const HEART_ANIM_MS = 7600;
 
@@ -60,7 +110,7 @@ export default function AnniversaryApp() {
       id: i,
       x: Math.random() * 100 + "%",
       rotate: Math.random() * 360,
-      scale: Math.random() * 1.6 + 0.9, // Slightly bigger elements for a lush feeling
+      scale: Math.random() * 1.6 + 0.9,
       duration: Math.random() * 18 + 16,
       delay: Math.random() * 6,
       char: items[Math.floor(Math.random() * items.length)],
@@ -189,16 +239,12 @@ export default function AnniversaryApp() {
   };
 
   const triggerUnlockSequence = () => {
-    // show a brief pop on the lock card before starting the unlocking portal
     setJustUnlocked(true);
     setIsMuted(false);
-
-    // Immediately start the unlocking portal animation
     setStep("unlocking");
 
     const colors = ["#ff0a54", "#ff477e", "#ff7096", "#ff85a1", "#fbb1bd"];
 
-    // light confetti at the start of unlocking
     confetti({
       particleCount: 12,
       angle: 60,
@@ -218,16 +264,50 @@ export default function AnniversaryApp() {
       gravity: 0.8,
     });
 
-    // move to the letter stage after the heart animation finishes
     setTimeout(() => {
       setStep("letter");
     }, HEART_ANIM_MS + 500);
 
-    // clear the small lock-card pop flag after the pop completes
     setTimeout(() => setJustUnlocked(false), 900);
   };
 
-  // Helper to render new floating characters
+  // Subtle Hidden Interaction Handler
+  const handleFloatingClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const x = e.clientX / window.innerWidth;
+    const y = e.clientY / window.innerHeight;
+
+    confetti({
+      particleCount: 15,
+      spread: 45,
+      origin: { x, y },
+      colors: ["#f43f5e", "#fb7185", "#fecdd3", "#fff1f2"],
+      ticks: 60,
+      gravity: 0.5,
+      scalar: 0.8,
+      zIndex: 100,
+    });
+
+    // 40% chance to drop a hidden love note
+    if (Math.random() > 0.6) {
+      const notes = [
+        "You're perfect ✨",
+        "I miss you 🥺",
+        "My whole world 🌍",
+        "Thinking of you...",
+        "Always yours ❤️",
+        "So beautiful 💖"
+      ];
+      const text = notes[Math.floor(Math.random() * notes.length)];
+      const newNote = { id: Date.now(), text, x: e.clientX, y: e.clientY };
+      setHiddenNotes((prev) => [...prev, newNote]);
+
+      setTimeout(() => {
+        setHiddenNotes((prev) => prev.filter((n) => n.id !== newNote.id));
+      }, 2500);
+    }
+  };
+
   const FloatingCharacters = () => {
     return characterAssets.map((asset, index) => {
       const xPos = 10 + (index * 15) % 80;
@@ -235,7 +315,8 @@ export default function AnniversaryApp() {
       return (
           <motion.div
             key={index}
-            className="absolute drop-shadow-[0_0_20px_rgba(244,63,94,0.3)] select-none pointer-events-none"
+            onClick={handleFloatingClick}
+            className="absolute drop-shadow-[0_0_20px_rgba(244,63,94,0.3)] select-none pointer-events-auto cursor-pointer hover:scale-110 hover:brightness-110 transition-all z-20"
             initial={{
               x: `${xPos}%`,
               y: "115%",
@@ -263,10 +344,10 @@ export default function AnniversaryApp() {
               alt={asset.alt} 
               width={asset.width} 
               height={asset.height} 
-              className="opacity-90"
+              className="opacity-90 pointer-events-none"
             />
           ) : (
-            <span className="text-5xl">{asset.char}</span>
+            <span className="text-5xl pointer-events-none">{asset.char}</span>
           )}
         </motion.div>
       );
@@ -309,7 +390,6 @@ export default function AnniversaryApp() {
               }
               className="w-full max-w-md rounded-[2.5rem] bg-stone-900/40 backdrop-blur-2xl border border-rose-500/20 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_30px_rgba(159,18,57,0.2)] flex flex-col items-center text-center relative overflow-hidden"
             >
-              {/* Background Floating elements inside lock screen */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
                 {floatingItems.slice(0, 15).map((item) => (
                   <motion.div
@@ -334,7 +414,6 @@ export default function AnniversaryApp() {
               </h1>
               <p className="text-xs mt-2 text-rose-300/60 italic tracking-widest font-light z-10">YOUR SPECIAL SPACE</p>
 
-              {/* Password Indicator Dots */}
               <div className="flex gap-5 my-8 z-10">
                 {[...Array(4)].map((_, i) => (
                   <div
@@ -348,7 +427,6 @@ export default function AnniversaryApp() {
                 ))}
               </div>
 
-              {/* Keypad */}
               <div className="grid grid-cols-3 gap-5 w-full max-w-[290px] mb-8 z-10">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                   <button
@@ -411,12 +489,11 @@ export default function AnniversaryApp() {
             transition={{ duration: 2.2, ease: "easeOut", delay: 0.16 }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden"
           >
-            {/* New floating characters and extra hearts */}
             <div className="absolute inset-0 pointer-events-none z-0">
               <FloatingCharacters />
             </div>
 
-            <div className="text-center mb-10 space-y-2 z-10 relative">
+            <div className="text-center mb-10 space-y-2 z-10 relative pointer-events-none">
               <span className="text-xs tracking-[0.3em] uppercase font-bold text-rose-300 bg-rose-500/10 px-4 py-1.5 rounded-full border border-rose-400/20 backdrop-blur-md shadow-lg">
                 🔒 Security Bypassed
               </span>
@@ -429,7 +506,6 @@ export default function AnniversaryApp() {
               onClick={() => setStep("final")}
               className="cursor-pointer group relative w-full max-w-md aspect-[4/3] rounded-3xl bg-gradient-to-br from-rose-50 to-stone-200 text-stone-800 p-8 flex flex-col justify-between shadow-[0_30px_60px_rgba(0,0,0,0.6)] border-2 border-white transition-all overflow-hidden z-10"
             >
-              {/* Inner Luxury Card Accents */}
               <div className="absolute inset-4 border border-rose-200/60 rounded-2xl pointer-events-none" />
               
               <div className="w-full flex justify-between items-start z-10">
@@ -463,12 +539,35 @@ export default function AnniversaryApp() {
               transition={{ duration: 4.2, ease: "easeOut", delay: 0.2 }}
               className="relative z-10 min-h-screen w-full flex flex-col items-center py-20 px-4 md:px-8 bg-gradient-to-b from-transparent via-rose-950/20 to-black/40"
             >
-            {/* Extended floating elements including new characters for the final page */}
+            
+            {/* Global Hidden Notes Layer */}
+            <AnimatePresence>
+              {hiddenNotes.map((note) => (
+                <motion.div
+                  key={note.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: -30, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, filter: "blur(5px)" }}
+                  className="fixed z-[999] pointer-events-none text-sm font-serif font-bold text-rose-100 bg-rose-950/80 px-4 py-2 rounded-full border border-rose-400/40 shadow-[0_0_20px_rgba(244,63,94,0.5)] backdrop-blur-md whitespace-nowrap"
+                  style={{ left: note.x, top: note.y, transform: 'translate(-50%, -100%)' }}
+                >
+                  {note.text}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Background Decor & Interactive Floating Layers */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+              <div className="absolute top-10 left-10 text-rose-500/5 text-8xl pointer-events-none select-none font-serif">♥</div>
+              <div className="absolute bottom-[20%] right-10 text-rose-500/5 text-9xl pointer-events-none select-none font-serif">♥</div>
+            </div>
+
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-20">
               {floatingItems.map((item) => (
                 <motion.div
                   key={item.id}
-                  className="absolute drop-shadow-[0_0_15px_rgba(244,63,94,0.4)] selection:bg-transparent select-none text-3xl"
+                  onClick={handleFloatingClick}
+                  className="absolute drop-shadow-[0_0_15px_rgba(244,63,94,0.4)] selection:bg-transparent select-none text-3xl pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
                   initial={{ x: item.x, y: "110%", rotate: item.rotate, scale: item.scale, opacity: 0 }}
                   animate={{ y: "-10%", rotate: item.rotate + 360, scale: [0.96, 1.04, 0.98], opacity: [0, 0.7, 0.7, 0] }}
                   transition={{ duration: item.duration * 1.8, repeat: Infinity, ease: "linear", delay: item.delay }}
@@ -489,12 +588,8 @@ export default function AnniversaryApp() {
             </button>
 
             {/* Extravagant Deep Romantic Aesthetic Wrapper */}
-            <div className="w-full max-w-2xl bg-stone-900/60 backdrop-blur-3xl border border-rose-500/20 shadow-[0_0_80px_rgba(0,0,0,0.6),_0_0_40px_rgba(159,18,57,0.2)] rounded-[3rem] p-8 md:p-14 space-y-20 relative z-10">
+            <div className="w-full max-w-2xl bg-stone-900/60 backdrop-blur-3xl border border-rose-500/20 shadow-[0_0_80px_rgba(0,0,0,0.6),_0_0_40px_rgba(159,18,57,0.2)] rounded-[3rem] p-8 md:p-14 space-y-20 relative z-30">
               
-              {/* Big Floating background decor hearts */}
-              <div className="absolute top-10 left-10 text-rose-500/5 text-8xl pointer-events-none select-none font-serif">♥</div>
-              <div className="absolute bottom-20 right-10 text-rose-500/5 text-9xl pointer-events-none select-none font-serif">♥</div>
-
               {/* Spectacular Header */}
               <div className="text-center space-y-4">
                 <motion.div
@@ -506,7 +601,7 @@ export default function AnniversaryApp() {
                   <Heart className="fill-rose-500 text-rose-500 animate-pulse" size={32} />
                 </motion.div>
                 <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-100 to-rose-200 font-serif tracking-tight leading-tight">
-                  To My Love, Shyraon ❤️
+                  To My Love, Shyaron ❤️
                 </h1>
                 <p className="text-xs font-bold uppercase tracking-[0.4em] text-rose-400/80 bg-rose-950/50 inline-block px-5 py-2 rounded-full border border-rose-500/10">
                   ❀ Happy Anniversary ❀
@@ -530,6 +625,20 @@ export default function AnniversaryApp() {
 
               <div className="h-px bg-gradient-to-r from-transparent via-rose-500/30 to-transparent" />
 
+              {/* NEW: Reasons I Love You Section */}
+              <div className="space-y-10">
+                <h3 className="text-2xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-rose-200 to-pink-200 text-center tracking-wider">
+                  Reasons I Love You
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {reasons.map((reason, i) => (
+                    <ReasonCard key={i} text={reason} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-transparent via-rose-500/30 to-transparent" />
+
               {/* High-Fidelity Journey Timeline */}
               <div className="space-y-12">
                 <h3 className="text-2xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-rose-200 to-pink-200 text-center tracking-wider">
@@ -538,7 +647,6 @@ export default function AnniversaryApp() {
                 
                 <div className="relative border-l-2 border-rose-500/30 pl-8 ml-2 md:ml-12 space-y-12">
                   
-                  {/* Timeline 1 */}
                   <div className="relative group">
                     <div className="absolute -left-[41px] top-1 w-6 h-6 rounded-full bg-rose-600 border-4 border-stone-900 shadow-[0_0_15px_rgba(244,63,94,0.6)] group-hover:scale-125 transition-transform" />
                     <div className="flex items-center gap-2 text-xs font-bold text-rose-400 uppercase tracking-widest mb-1.5">
@@ -549,7 +657,6 @@ export default function AnniversaryApp() {
                     <p className="text-base text-stone-300/80 mt-1 font-light">It began so simple—just a random game of Mobile Legends. I didn’t think much of it at the time, but looking back, that was the exact moment everything changed. We became this instant heartbeat duo, completely in sync from the very first match. It honestly felt like my universe finally shifted into place, like I’d found the missing piece I didn’t even know I was looking for… you.</p>
                   </div>
 
-                  {/* Timeline 2 */}
                   <div className="relative group">
                     <div className="absolute -left-[41px] top-1 w-6 h-6 rounded-full bg-rose-600 border-4 border-stone-900 shadow-[0_0_15px_rgba(244,63,94,0.6)] group-hover:scale-125 transition-transform" />
                     <div className="flex items-center gap-2 text-xs font-bold text-rose-400 uppercase tracking-widest mb-1.5">
@@ -560,7 +667,6 @@ export default function AnniversaryApp() {
                     <p className="text-base text-stone-300/80 mt-1 font-light">Suddenly, my favorite part of the day became the hours we spent losing track of time. Late-night talks that bled into early mornings, jumping from Roblox to Sky, back to MLBB, and just talking about absolutely nothing. We’ve had our moments—we’ve argued, we’ve gotten under each other’s skin—but we always, always found our way back. You became my quiet space. My comfort. The person I run to when the rest of the world gets too loud.</p>
                   </div>
 
-                  {/* Timeline 3 */}
                   <div className="relative group">
                     <div className="absolute -left-[41px] top-1 w-6 h-6 rounded-full bg-rose-600 border-4 border-stone-900 shadow-[0_0_15px_rgba(244,63,94,0.6)] group-hover:scale-125 transition-transform" />
                     <div className="flex items-center gap-2 text-xs font-bold text-rose-400 uppercase tracking-widest mb-1.5">
@@ -568,8 +674,7 @@ export default function AnniversaryApp() {
                       <span>Today & Beyond</span>
                     </div>
                     <h4 className="text-xl font-bold text-stone-100 font-serif">Celebrating Today</h4>
-                    <p className="text-base text-stone-300/80 mt-1 font-light">Now here we are still together, still choosing each other every day.
-Through games, calls, silence, laughs, and everything in between… it’s always been you.</p>
+                    <p className="text-base text-stone-300/80 mt-1 font-light">Now here we are still together, still choosing each other every day. Through games, calls, silence, laughs, and everything in between… it’s always been you.</p>
                   </div>
 
                 </div>
@@ -577,22 +682,62 @@ Through games, calls, silence, laughs, and everything in between… it’s alway
 
               <div className="h-px bg-gradient-to-r from-transparent via-rose-500/30 to-transparent" />
 
-              {/* Signature Couple Quote Showcase */}
+              {/* Updated Custom Quote */}
               <div className="bg-gradient-to-br from-rose-950/40 to-stone-900/40 rounded-3xl p-8 border border-rose-500/20 text-center space-y-4 shadow-inner relative overflow-hidden">
                 <div className="absolute -right-6 -bottom-6 text-rose-500/5 text-7xl select-none font-serif">“</div>
-                <span className="text-xs uppercase tracking-[0.2em] font-bold text-rose-400">Words I Live By</span>
+                <span className="text-xs uppercase tracking-[0.2em] font-bold text-rose-400">A Thought For You</span>
                 <p className="text-xl md:text-2xl font-serif italic text-stone-200 leading-relaxed max-w-md mx-auto relative z-10">
-                  "In all the world, there is no heart for me like yours. In all the world, there is no love for you like mine."
+                  "It’s crazy how someone so far away can still feel like home."
                 </p>
-                <div className="text-xs text-rose-300/60 tracking-widest font-mono relative z-10">— Maya Angelou</div>
+                <div className="text-xs text-rose-300/60 tracking-widest font-mono relative z-10">— Always on my mind</div>
               </div>
 
-              {/* End Closing Sign-off */}
-              <div className="text-center pt-6 space-y-3">
-                <p className="text-sm text-rose-300/50 italic tracking-wide">I love you so much, more than words can say</p>
-                <h2 className="text-3xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-rose-100 to-pink-300 tracking-widest">
-                  Forever Yours, Adit 🌹
-                </h2>
+              {/* Cinematic Ending Sequence */}
+              <div className="relative text-center pt-24 pb-16 space-y-10 overflow-hidden">
+                
+                {/* Local floating particles rising gently inside the ending area */}
+                <div className="absolute inset-0 pointer-events-none flex justify-center items-center opacity-40">
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={`star-${i}`}
+                      className="absolute text-rose-400/50"
+                      initial={{ y: 80, opacity: 0, scale: 0.5 }}
+                      animate={{ y: -180, opacity: [0, 1, 0], scale: 1.5 }}
+                      transition={{ duration: 4, repeat: Infinity, delay: i * 0.7, ease: "easeOut" }}
+                      style={{ left: `${30 + Math.random() * 40}%`, fontSize: `${Math.random() * 10 + 10}px` }}
+                    >
+                      {i % 2 === 0 ? "✨" : "♥"}
+                    </motion.div>
+                  ))}
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 2 }}
+                  className="relative z-10 space-y-3"
+                >
+                  <p className="text-sm text-rose-300/50 italic tracking-wide">
+                    I love you so much, more than words can say
+                  </p>
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-rose-100 to-pink-300 tracking-widest">
+                    Forever Yours, Adit 🌹
+                  </h2>
+                </motion.div>
+
+                {/* Gentle fade-in for the final cinematic line */}
+                <motion.div
+                  initial={{ opacity: 0, filter: "blur(10px)" }}
+                  whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 3.5, delay: 1.2 }}
+                  className="pt-16 relative z-10"
+                >
+                  <p className="text-sm md:text-lg font-light tracking-[0.3em] text-rose-300/60 uppercase font-serif drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]">
+                    And this is only the beginning.
+                  </p>
+                </motion.div>
               </div>
 
             </div>
