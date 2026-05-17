@@ -412,7 +412,7 @@ export default function AnniversaryApp() {
               <h1 className="text-3xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-100 to-rose-200 font-serif z-10">
                 Welcome, Shyaron
               </h1>
-              <p className="text-xs mt-2 text-rose-300/60 italic tracking-widest font-light z-10">YOUR SPECIAL SPACE</p>
+              <p className="text-xs mt-2 text-rose-300/60 italic tracking-widest font-light z-10">Only You Could Unlock This</p>
 
               <div className="flex gap-5 my-8 z-10">
                 {[...Array(4)].map((_, i) => (
