@@ -51,7 +51,7 @@ export default function AnniversaryApp() {
   const [justUnlocked, setJustUnlocked] = useState<boolean>(false);
   const [floatingItems, setFloatingItems] = useState<FloatingItem[]>([]);
   const ytPlayerRef = useRef<any>(null);
-  const HEART_ANIM_MS = 4800;
+  const HEART_ANIM_MS = 7600;
 
   // Fix Hydration Error: Only generate random attributes on the client side after mount
   useEffect(() => {
@@ -61,8 +61,8 @@ export default function AnniversaryApp() {
       x: Math.random() * 100 + "%",
       rotate: Math.random() * 360,
       scale: Math.random() * 1.6 + 0.9, // Slightly bigger elements for a lush feeling
-      duration: Math.random() * 14 + 10,
-      delay: Math.random() * 5,
+      duration: Math.random() * 18 + 16,
+      delay: Math.random() * 6,
       char: items[Math.floor(Math.random() * items.length)],
     }));
     setFloatingItems(generated);
@@ -221,7 +221,7 @@ export default function AnniversaryApp() {
     // move to the letter stage after the heart animation finishes
     setTimeout(() => {
       setStep("letter");
-    }, HEART_ANIM_MS + 300);
+    }, HEART_ANIM_MS + 500);
 
     // clear the small lock-card pop flag after the pop completes
     setTimeout(() => setJustUnlocked(false), 900);
@@ -250,10 +250,10 @@ export default function AnniversaryApp() {
               opacity: [0, 0.8, 0.8, 0],
             }}
             transition={{
-              duration: Math.random() * 18 + 14,
+              duration: Math.random() * 28 + 26,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: baseDelay + Math.random() * 3,
+              delay: baseDelay + Math.random() * 5,
             }}
             style={{ left: `${xPos}%` }}
           >
@@ -287,7 +287,7 @@ export default function AnniversaryApp() {
             key="lock"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.08 }}
-            transition={{ duration: 1.6, ease: "easeOut" }}
+            transition={{ duration: 1.9, ease: "easeOut" }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4"
           >
             <div className="absolute w-[350px] h-[350px] bg-rose-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[5200ms]" />
@@ -302,10 +302,10 @@ export default function AnniversaryApp() {
               }
               transition={
                 error
-                  ? { duration: 0.8, ease: "easeInOut" }
+                  ? { duration: 1.0, ease: "easeInOut" }
                   : justUnlocked
-                  ? { duration: 1.12, ease: "easeOut" }
-                  : { duration: 0.9 }
+                  ? { duration: 1.8, ease: "easeOut" }
+                  : { duration: 1.2, ease: "easeInOut" }
               }
               className="w-full max-w-md rounded-[2.5rem] bg-stone-900/40 backdrop-blur-2xl border border-rose-500/20 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_30px_rgba(159,18,57,0.2)] flex flex-col items-center text-center relative overflow-hidden"
             >
@@ -376,7 +376,7 @@ export default function AnniversaryApp() {
 
               <div className="text-xs text-rose-200/90 flex items-center gap-2 bg-gradient-to-r from-rose-950/40 to-pink-950/40 px-5 py-3 rounded-2xl border border-rose-500/20 shadow-sm backdrop-blur-md z-10">
                 <Heart size={14} className="fill-rose-500 text-rose-500 animate-pulse" />
-                <span className="font-light">Hint: Adit’s birthday + Shyraon’s birthday ❤️</span>
+                <span className="font-light">Hint: Adit’s birthday + Shyaron’s birthday ❤️</span>
               </div>
             </motion.div>
           </motion.div>
@@ -393,7 +393,7 @@ export default function AnniversaryApp() {
           >
             <motion.div
               animate={{ scale: [0.6, 1.18, 12, 45], opacity: [0, 1, 1, 0] }}
-              transition={{ duration: HEART_ANIM_MS / 1000, ease: "easeInOut" }}
+              transition={{ duration: HEART_ANIM_MS / 1000, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
               className="text-rose-500 filter drop-shadow-[0_0_50px_rgba(244,63,94,0.8)]"
             >
               <Heart size={100} className="fill-rose-600 text-rose-600" />
@@ -408,7 +408,7 @@ export default function AnniversaryApp() {
             initial={{ opacity: 0, y: 50, scale: 0.96 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -30 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+            transition={{ duration: 2.2, ease: "easeOut", delay: 0.16 }}
             className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden"
           >
             {/* New floating characters and extra hearts */}
@@ -460,7 +460,7 @@ export default function AnniversaryApp() {
               key="final"
               initial={{ opacity: 0, y: 38, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 2.6, ease: "easeOut" }}
+              transition={{ duration: 4.2, ease: "easeOut", delay: 0.2 }}
               className="relative z-10 min-h-screen w-full flex flex-col items-center py-20 px-4 md:px-8 bg-gradient-to-b from-transparent via-rose-950/20 to-black/40"
             >
             {/* Extended floating elements including new characters for the final page */}
