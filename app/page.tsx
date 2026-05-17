@@ -495,7 +495,7 @@ export default function AnniversaryApp() {
 
             <div className="text-center mb-10 space-y-2 z-10 relative pointer-events-none">
               <span className="text-xs tracking-[0.3em] uppercase font-bold text-rose-300 bg-rose-500/10 px-4 py-1.5 rounded-full border border-rose-400/20 backdrop-blur-md shadow-lg">
-                🔒 Security Bypassed
+                🔒 You Found Your Way To Me
               </span>
               <h2 className="text-4xl font-serif text-stone-100 font-bold tracking-wide mt-4">You have a sweet message waiting</h2>
             </div>
